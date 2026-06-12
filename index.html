@@ -17,11 +17,7 @@
             --transition: all 0.2s ease;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Montserrat', system-ui, sans-serif;
@@ -52,12 +48,7 @@
             background-position: bottom;
             background-size: 1200px 80px;
         }
-        .kamgu-logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 0.3rem;
-        }
+        .kamgu-logo { font-size: 1.5rem; font-weight: 800; color: white; margin-bottom: 0.3rem; }
         .kamgu-logo span { color: var(--kamgu-sun-orange); }
         .kamgu-header h1 { font-size: 1.8rem; font-weight: 700; color: white; }
         .kamgu-header p { color: #e0e4ff; margin-top: 0.5rem; font-size: 0.95rem; }
@@ -71,12 +62,7 @@
             font-weight: 500;
         }
 
-        .questions-list {
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
+        .questions-list { padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
         .question-card {
             background: white;
             border-radius: 28px;
@@ -85,25 +71,18 @@
             border: 1px solid #e2e8f0;
             transition: var(--transition);
         }
-        .question-text {
-            font-weight: 600;
-            margin-bottom: 0.8rem;
-            font-size: 1rem;
-            color: var(--kamgu-deep-blue);
-        }
+        .question-text { font-weight: 600; margin-bottom: 0.8rem; font-size: 1rem; color: var(--kamgu-deep-blue); }
+        
+        /* ИСПРАВЛЕННЫЙ СЛАЙДЕР – используем grid */
         .slider-row {
-            display: flex;
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            gap: 0.8rem;
             align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
         }
-        .slider-row label {
-            font-weight: 500;
-            min-width: 40px;
-        }
+        
         input[type="range"] {
-            flex: 1;
-            min-width: 200px;
+            width: 100%;
             height: 6px;
             -webkit-appearance: none;
             background: #e2e8f0;
@@ -171,12 +150,16 @@
             font-size: 0.7rem;
         }
         .kamgu-footer span { color: var(--kamgu-sun-orange); }
+
         @media (max-width: 650px) {
             body { padding: 1rem; }
             .questions-list { padding: 1rem; gap: 1rem; }
             .question-card { padding: 0.8rem 1rem; }
-            .slider-row { flex-direction: column; align-items: stretch; gap: 0.5rem; }
-            input[type="range"] { width: 100%; }
+            .slider-row {
+                /* на маленьких экранах можно немного сжать колонки */
+                grid-template-columns: auto minmax(100px, 1fr) auto auto;
+                gap: 0.5rem;
+            }
             .kamgu-header h1 { font-size: 1.4rem; }
             .result-section { margin: 0 1rem 1.5rem; }
         }
@@ -217,11 +200,7 @@
 </div>
 
 <script>
-    // --------------------------------------------------------------
-    // Список вопросов (текст + привязка к компетенции)
-    // Компетенции: 0-Коммуникация, 1-Адаптивность, 2-Сотрудничество, 3-Саморегуляция,
-    //              4-Стрессоустойчивость, 5-Отношение к профессии, 6-Отношение к родному краю, 7-Проф.развитие
-    // --------------------------------------------------------------
+    // (ваш существующий JavaScript без изменений)
     const questionsRaw = [
         { text: "Я легко нахожу общий язык с разными людьми (могу говорить «на их языке»).", compId: 0 },
         { text: "Я умею аргументированно отстаивать свою позицию.", compId: 0 },
@@ -249,7 +228,6 @@
         { text: "У меня высокая мотивация к изучению нового, я стремлюсь к развитию.", compId: 7 }
     ];
 
-    // Перемешиваем вопросы случайным образом
     function shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -259,9 +237,8 @@
     }
 
     let questions = shuffleArray([...questionsRaw]);
-    let answers = []; // массив значений для каждого вопроса (0-10), инициализируем 5
+    let answers = [];
 
-    // Рендерим все вопросы с ползунками
     function renderQuestions() {
         const container = document.getElementById('questionsList');
         container.innerHTML = '';
@@ -300,7 +277,6 @@
         });
     }
 
-    // Инициализация answers (по умолчанию 5 для каждого вопроса, если не задано)
     function initAnswers() {
         if (answers.length === 0) {
             answers = new Array(questions.length).fill(5);
@@ -309,9 +285,7 @@
         }
     }
 
-    // Вычисляем средний балл по каждой компетенции (0-10)
     function computeCompetencyScores() {
-        // Структура для накопления сумм и количества вопросов по compId
         const sums = [0,0,0,0,0,0,0,0];
         const counts = [0,0,0,0,0,0,0,0];
         for (let i = 0; i < questions.length; i++) {
@@ -320,63 +294,29 @@
             sums[compId] += val;
             counts[compId]++;
         }
-        const scores = sums.map((sum, idx) => {
-            if (counts[idx] === 0) return 0;
-            return Math.round((sum / counts[idx]) * 10) / 10;
-        });
-        return scores;
+        return sums.map((sum, idx) => counts[idx] === 0 ? 0 : Math.round((sum / counts[idx]) * 10) / 10);
     }
 
     let chartInstance = null;
     function buildRadar() {
         const scores = computeCompetencyScores();
-        const labels = [
-            "Коммуникация", "Адаптивность", "Сотрудничество", "Саморегуляция",
-            "Стрессоустойчивость", "Отношение к профессии", "Отношение к родному краю", "Профессиональное развитие"
-        ];
+        const labels = ["Коммуникация", "Адаптивность", "Сотрудничество", "Саморегуляция", "Стрессоустойчивость", "Отношение к профессии", "Отношение к родному краю", "Профессиональное развитие"];
         const ctx = document.getElementById('radarChart').getContext('2d');
         if (!ctx) return;
         if (chartInstance) chartInstance.destroy();
         chartInstance = new Chart(ctx, {
             type: 'radar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Ваш уровень (0–10)',
-                    data: scores,
-                    backgroundColor: 'rgba(240, 78, 35, 0.25)',
-                    borderColor: '#f04e23',
-                    borderWidth: 2,
-                    pointBackgroundColor: '#0f2954',
-                    pointBorderColor: '#fff',
-                    pointRadius: 5
-                }]
-            },
+            data: { labels, datasets: [{ label: 'Ваш уровень (0–10)', data: scores, backgroundColor: 'rgba(240, 78, 35, 0.25)', borderColor: '#f04e23', borderWidth: 2, pointBackgroundColor: '#0f2954', pointBorderColor: '#fff', pointRadius: 5 }] },
             options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                scales: {
-                    r: {
-                        beginAtZero: true,
-                        max: 10,
-                        ticks: { stepSize: 2, backdropColor: 'transparent' },
-                        grid: { color: '#cbd5e1' },
-                        angleLines: { color: '#cbd5e1' },
-                        pointLabels: { font: { size: 11, family: 'Montserrat' }, color: '#0f2954' }
-                    }
-                },
-                plugins: {
-                    tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}` } },
-                    legend: { position: 'bottom', labels: { font: { size: 11 } } }
-                }
+                responsive: true, maintainAspectRatio: true,
+                scales: { r: { beginAtZero: true, max: 10, ticks: { stepSize: 2, backdropColor: 'transparent' }, grid: { color: '#cbd5e1' }, angleLines: { color: '#cbd5e1' }, pointLabels: { font: { size: 11, family: 'Montserrat' }, color: '#0f2954' } } },
+                plugins: { tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}` } }, legend: { position: 'bottom', labels: { font: { size: 11 } } } }
             }
         });
-        const resultSection = document.getElementById('resultSection');
-        resultSection.style.display = 'block';
-        resultSection.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('resultSection').style.display = 'block';
+        document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Проверка, что все вопросы отвечены (всегда отвечены, т.к. есть default 5)
     document.addEventListener('DOMContentLoaded', () => {
         initAnswers();
         renderQuestions();
