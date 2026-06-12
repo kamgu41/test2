@@ -6,6 +6,7 @@
     <title>Компетенции первооткрывателя | КамГУ им. Витуса Беринга</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
+        /* все стили остаются как в предыдущем исправленном варианте (с сокращёнными названиями и адаптацией) */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         :root {
@@ -72,13 +73,7 @@
             transition: var(--transition);
         }
         .question-text { font-weight: 600; margin-bottom: 0.8rem; font-size: 1rem; color: var(--kamgu-deep-blue); }
-        
-        .slider-row {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: nowrap;
-        }
+        .slider-row { display: flex; align-items: center; gap: 1rem; flex-wrap: nowrap; }
         input[type="range"] {
             flex: 1;
             min-width: 0;
@@ -136,19 +131,16 @@
             display: flex;
             justify-content: center;
         }
-        canvas {
-            max-width: 100%;
-            height: auto;
-            min-width: 280px;
-        }
+        canvas { max-width: 100%; height: auto; min-width: 280px; }
         .disclaimer {
             margin: 0 2rem 1.5rem;
             padding: 0.7rem 1.2rem;
             background: rgba(240,78,35,0.08);
             border-radius: 24px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             text-align: center;
             font-style: italic;
+            color: #2c3e50;
         }
         .kamgu-footer {
             background: var(--kamgu-deep-blue);
@@ -184,7 +176,7 @@
     <div id="questionsList" class="questions-list"></div>
 
     <div class="button-area">
-        <button id="buildBtn" class="kamgu-btn"> Построить мой профиль </button>
+        <button id="buildBtn" class="kamgu-btn">✨ Построить мой профиль ✨</button>
     </div>
 
     <div id="resultSection" class="result-section">
@@ -195,17 +187,18 @@
         <p style="text-align: center; margin-top: 0.8rem; font-size: 0.85rem;">Средний балл по каждой компетенции (0–10).</p>
     </div>
 
+    <!-- НОВАЯ ФРАЗА, КАК В ПЕРВОМ ТЕСТЕ -->
     <div class="disclaimer">
-        📌 Опросник помогает наметить зоны роста. Стань первооткрывателем в КамГУ!
+        📌 Данный опросник не является профессиональным инструментом диагностики, но точно помогает узнать, какие компетенции ты можешь "прокачать" в КамГУ им. Витуса Беринга, чтобы стать настоящим первооткрывателем!
     </div>
+
     <div class="kamgu-footer">
         🌋 <span>Камчатский государственный университет им. Витуса Беринга</span> | Университет первооткрывателей
     </div>
 </div>
 
 <script>
-    // Список вопросов (24, по 3 на компетенцию, для простоты – оригинальный набор, без расширения до 5)
-    // Но вы можете оставить свой набор вопросов. Для исправления графика названия компетенций используем короткие метки.
+    // --- Тот же самый скрипт (вопросы, логика, график) ---
     const questionsRaw = [
         { text: "Я легко нахожу общий язык с разными людьми (могу говорить «на их языке»).", compId: 0 },
         { text: "Я умею аргументированно отстаивать свою позицию.", compId: 0 },
@@ -233,16 +226,9 @@
         { text: "У меня высокая мотивация к изучению нового, я стремлюсь к развитию.", compId: 7 }
     ];
 
-    // Короткие названия для розы ветров (чтобы влезали)
     const shortLabels = [
-        "Коммуникация",
-        "Адаптивность",
-        "Сотрудничество",
-        "Саморегуляция",
-        "Стрессоуст.",
-        "Любовь к профессии",
-        "Любовь к краю",
-        "Проф. развитие"
+        "Коммуникация", "Адаптивность", "Сотрудничество", "Саморегуляция",
+        "Стрессоуст.", "Любовь к профессии", "Любовь к краю", "Проф. развитие"
     ];
 
     function shuffleArray(arr) {
@@ -333,31 +319,16 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
-                layout: {
-                    padding: {
-                        top: 20,
-                        bottom: 20,
-                        left: 20,
-                        right: 20
-                    }
-                },
+                layout: { padding: { top: 20, bottom: 20, left: 20, right: 20 } },
                 scales: {
                     r: {
                         beginAtZero: true,
                         max: 10,
-                        ticks: {
-                            stepSize: 2,
-                            backdropColor: 'transparent',
-                            font: { size: 10 }
-                        },
+                        ticks: { stepSize: 2, backdropColor: 'transparent', font: { size: 10 } },
                         grid: { color: '#cbd5e1' },
                         angleLines: { color: '#cbd5e1' },
                         pointLabels: {
-                            font: {
-                                size: window.innerWidth < 650 ? 9 : 11,
-                                family: 'Montserrat',
-                                weight: '500'
-                            },
+                            font: { size: window.innerWidth < 650 ? 9 : 11, family: 'Montserrat', weight: '500' },
                             color: '#0f2954',
                             padding: 8
                         }
@@ -369,12 +340,10 @@
                 }
             }
         });
-        const resultSection = document.getElementById('resultSection');
-        resultSection.style.display = 'block';
-        resultSection.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('resultSection').style.display = 'block';
+        document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Адаптация к изменению ориентации экрана (перерисовка с новым размером шрифта)
     window.addEventListener('resize', () => {
         if (chartInstance) {
             const newFontSize = window.innerWidth < 650 ? 9 : 11;
