@@ -123,15 +123,24 @@
         .kamgu-btn:hover { background: #1a3f6e; transform: scale(1.02); }
         .result-section {
             margin: 0 2rem 2rem;
-            padding: 1.5rem;
+            padding: 1rem;
             background: rgba(255,255,255,0.95);
             border-radius: 32px;
             border: 1px solid var(--kamgu-sun-orange);
             display: none;
         }
-        .result-section h3 { color: var(--kamgu-deep-blue); margin-bottom: 1rem; }
-        .chart-container { max-width: 500px; margin: 0 auto; }
-        canvas { width: 100% !important; height: auto !important; }
+        .result-section h3 { color: var(--kamgu-deep-blue); margin-bottom: 0.8rem; }
+        .chart-container {
+            max-width: 100%;
+            overflow-x: auto;
+            display: flex;
+            justify-content: center;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            min-width: 280px;
+        }
         .disclaimer {
             margin: 0 2rem 1.5rem;
             padding: 0.7rem 1.2rem;
@@ -183,7 +192,7 @@
         <div class="chart-container">
             <canvas id="radarChart" width="500" height="500"></canvas>
         </div>
-        <p style="text-align: center; margin-top: 1rem;">Средний балл по каждой компетенции (0–10).</p>
+        <p style="text-align: center; margin-top: 0.8rem; font-size: 0.85rem;">Средний балл по каждой компетенции (0–10).</p>
     </div>
 
     <div class="disclaimer">
@@ -195,6 +204,8 @@
 </div>
 
 <script>
+    // Список вопросов (24, по 3 на компетенцию, для простоты – оригинальный набор, без расширения до 5)
+    // Но вы можете оставить свой набор вопросов. Для исправления графика названия компетенций используем короткие метки.
     const questionsRaw = [
         { text: "Я легко нахожу общий язык с разными людьми (могу говорить «на их языке»).", compId: 0 },
         { text: "Я умею аргументированно отстаивать свою позицию.", compId: 0 },
@@ -220,6 +231,18 @@
         { text: "Я постоянно обновляю свои знания в профессиональной сфере.", compId: 7 },
         { text: "Мне нравится экспериментировать и пробовать новые подходы.", compId: 7 },
         { text: "У меня высокая мотивация к изучению нового, я стремлюсь к развитию.", compId: 7 }
+    ];
+
+    // Короткие названия для розы ветров (чтобы влезали)
+    const shortLabels = [
+        "Коммуникация",
+        "Адаптивность",
+        "Сотрудничество",
+        "Саморегуляция",
+        "Стрессоуст.",
+        "Любовь к профессии",
+        "Любовь к краю",
+        "Проф. развитие"
     ];
 
     function shuffleArray(arr) {
@@ -286,26 +309,16 @@
     }
 
     let chartInstance = null;
-
     function buildRadar() {
         const scores = computeCompetencyScores();
-        const labels = [
-            "Коммуникация", "Адаптивность", "Сотрудничество", "Саморегуляция",
-            "Стрессоустойчивость", "Отношение к профессии", "Отношение к родному краю", "Профессиональное развитие"
-        ];
         const ctx = document.getElementById('radarChart').getContext('2d');
         if (!ctx) return;
         if (chartInstance) chartInstance.destroy();
 
-        // Определяем размер шрифта в зависимости от ширины экрана
-        const isMobile = window.innerWidth < 600;
-        const fontSize = isMobile ? 9 : 11;
-        const legendFontSize = isMobile ? 10 : 12;
-
         chartInstance = new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: labels,
+                labels: shortLabels,
                 datasets: [{
                     label: 'Ваш уровень (0–10)',
                     data: scores,
@@ -332,46 +345,41 @@
                     r: {
                         beginAtZero: true,
                         max: 10,
-                        ticks: { stepSize: 2, backdropColor: 'transparent' },
+                        ticks: {
+                            stepSize: 2,
+                            backdropColor: 'transparent',
+                            font: { size: 10 }
+                        },
                         grid: { color: '#cbd5e1' },
                         angleLines: { color: '#cbd5e1' },
                         pointLabels: {
-                            font: { size: fontSize, family: 'Montserrat' },
-                            padding: 6,
-                            callback: function(label) {
-                                // переносим слишком длинные названия (например "Профессиональное развитие")
-                                if (label.length > 18) {
-                                    const words = label.split(' ');
-                                    if (words.length > 1) {
-                                        const mid = Math.ceil(words.length / 2);
-                                        return words.slice(0, mid).join(' ') + '\n' + words.slice(mid).join(' ');
-                                    }
-                                    return label.substring(0, 14) + '...';
-                                }
-                                return label;
-                            }
+                            font: {
+                                size: window.innerWidth < 650 ? 9 : 11,
+                                family: 'Montserrat',
+                                weight: '500'
+                            },
+                            color: '#0f2954',
+                            padding: 8
                         }
                     }
                 },
                 plugins: {
                     tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}` } },
-                    legend: {
-                        position: 'bottom',
-                        labels: { font: { size: legendFontSize, family: 'Montserrat' } }
-                    }
+                    legend: { position: 'bottom', labels: { font: { size: 11 } } }
                 }
             }
         });
-
         const resultSection = document.getElementById('resultSection');
         resultSection.style.display = 'block';
         resultSection.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Перестроить график при изменении ориентации экрана (чтобы шрифты пересчитались)
+    // Адаптация к изменению ориентации экрана (перерисовка с новым размером шрифта)
     window.addEventListener('resize', () => {
         if (chartInstance) {
-            buildRadar();
+            const newFontSize = window.innerWidth < 650 ? 9 : 11;
+            chartInstance.options.scales.r.pointLabels.font.size = newFontSize;
+            chartInstance.update();
         }
     });
 
