@@ -6,7 +6,6 @@
     <title>Компетенции первооткрывателя | КамГУ им. Витуса Беринга</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* === все стили без изменений, кроме .slider-row === */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         :root {
@@ -74,7 +73,6 @@
         }
         .question-text { font-weight: 600; margin-bottom: 0.8rem; font-size: 1rem; color: var(--kamgu-deep-blue); }
         
-        /* Упрощённый слайдер: только ползунок и значение */
         .slider-row {
             display: flex;
             align-items: center;
@@ -83,7 +81,7 @@
         }
         input[type="range"] {
             flex: 1;
-            min-width: 0; /* важно для корректного сжатия */
+            min-width: 0;
             height: 6px;
             -webkit-appearance: none;
             background: #e2e8f0;
@@ -177,7 +175,7 @@
     <div id="questionsList" class="questions-list"></div>
 
     <div class="button-area">
-        <button id="buildBtn" class="kamgu-btn"> Построить мой профиль </button>
+        <button id="buildBtn" class="kamgu-btn">✨ Построить мой профиль ✨</button>
     </div>
 
     <div id="resultSection" class="result-section">
@@ -197,7 +195,6 @@
 </div>
 
 <script>
-    // --- Список вопросов (без изменений) ---
     const questionsRaw = [
         { text: "Я легко нахожу общий язык с разными людьми (могу говорить «на их языке»).", compId: 0 },
         { text: "Я умею аргументированно отстаивать свою позицию.", compId: 0 },
@@ -225,7 +222,6 @@
         { text: "У меня высокая мотивация к изучению нового, я стремлюсь к развитию.", compId: 7 }
     ];
 
-    // Перемешивание
     function shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -237,7 +233,6 @@
     let questions = shuffleArray([...questionsRaw]);
     let answers = [];
 
-    // Рендеринг вопросов – без меток 0 и 10
     function renderQuestions() {
         const container = document.getElementById('questionsList');
         container.innerHTML = '';
@@ -249,7 +244,6 @@
             textDiv.textContent = `${idx+1}. ${q.text}`;
             const sliderRow = document.createElement('div');
             sliderRow.className = 'slider-row';
-            
             const slider = document.createElement('input');
             slider.type = 'range';
             slider.min = 0;
@@ -263,7 +257,6 @@
             const valueSpan = document.createElement('span');
             valueSpan.className = 'value-display';
             valueSpan.textContent = slider.value;
-            
             sliderRow.appendChild(slider);
             sliderRow.appendChild(valueSpan);
             card.appendChild(textDiv);
@@ -293,25 +286,94 @@
     }
 
     let chartInstance = null;
+
     function buildRadar() {
         const scores = computeCompetencyScores();
-        const labels = ["Коммуникация", "Адаптивность", "Сотрудничество", "Саморегуляция", "Стрессоустойчивость", "Отношение к профессии", "Отношение к родному краю", "Профессиональное развитие"];
+        const labels = [
+            "Коммуникация", "Адаптивность", "Сотрудничество", "Саморегуляция",
+            "Стрессоустойчивость", "Отношение к профессии", "Отношение к родному краю", "Профессиональное развитие"
+        ];
         const ctx = document.getElementById('radarChart').getContext('2d');
         if (!ctx) return;
         if (chartInstance) chartInstance.destroy();
+
+        // Определяем размер шрифта в зависимости от ширины экрана
+        const isMobile = window.innerWidth < 600;
+        const fontSize = isMobile ? 9 : 11;
+        const legendFontSize = isMobile ? 10 : 12;
+
         chartInstance = new Chart(ctx, {
             type: 'radar',
-            data: { labels, datasets: [{ label: 'Ваш уровень (0–10)', data: scores, backgroundColor: 'rgba(240, 78, 35, 0.25)', borderColor: '#f04e23', borderWidth: 2, pointBackgroundColor: '#0f2954', pointBorderColor: '#fff', pointRadius: 5 }] },
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Ваш уровень (0–10)',
+                    data: scores,
+                    backgroundColor: 'rgba(240, 78, 35, 0.25)',
+                    borderColor: '#f04e23',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#0f2954',
+                    pointBorderColor: '#fff',
+                    pointRadius: 5
+                }]
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
-                scales: { r: { beginAtZero: true, max: 10, ticks: { stepSize: 2, backdropColor: 'transparent' }, grid: { color: '#cbd5e1' }, angleLines: { color: '#cbd5e1' }, pointLabels: { font: { size: 11, family: 'Montserrat' }, color: '#0f2954' } } },
-                plugins: { tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}` } }, legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+                layout: {
+                    padding: {
+                        top: 20,
+                        bottom: 20,
+                        left: 20,
+                        right: 20
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 10,
+                        ticks: { stepSize: 2, backdropColor: 'transparent' },
+                        grid: { color: '#cbd5e1' },
+                        angleLines: { color: '#cbd5e1' },
+                        pointLabels: {
+                            font: { size: fontSize, family: 'Montserrat' },
+                            padding: 6,
+                            callback: function(label) {
+                                // переносим слишком длинные названия (например "Профессиональное развитие")
+                                if (label.length > 18) {
+                                    const words = label.split(' ');
+                                    if (words.length > 1) {
+                                        const mid = Math.ceil(words.length / 2);
+                                        return words.slice(0, mid).join(' ') + '\n' + words.slice(mid).join(' ');
+                                    }
+                                    return label.substring(0, 14) + '...';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}` } },
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: legendFontSize, family: 'Montserrat' } }
+                    }
+                }
             }
         });
-        document.getElementById('resultSection').style.display = 'block';
-        document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+
+        const resultSection = document.getElementById('resultSection');
+        resultSection.style.display = 'block';
+        resultSection.scrollIntoView({ behavior: 'smooth' });
     }
+
+    // Перестроить график при изменении ориентации экрана (чтобы шрифты пересчитались)
+    window.addEventListener('resize', () => {
+        if (chartInstance) {
+            buildRadar();
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
         initAnswers();
