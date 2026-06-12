@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Компетенции первооткрывателя | КамГУ им. Витуса Беринга</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --kamgu-deep-blue: #0f2954;
+            --kamgu-sun-orange: #f04e23;
+            --bg-light: #F5F7FA;
+            --text-dark: #1E2A3E;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', system-ui, sans-serif;
+            background: linear-gradient(145deg, #f0f4fa 0%, #e2e8f0 100%);
+            color: var(--text-dark);
+            padding: 2rem 1.5rem;
+        }
+
+        .kamgu-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 32px;
+            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+        }
+
+        .kamgu-header {
+            background: var(--kamgu-deep-blue);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid var(--kamgu-sun-orange);
+            position: relative;
+            overflow: hidden;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'%3E%3Cpath fill='rgba(255,255,255,0.12)' d='M0,192L60,176C120,160,240,128,360,138.7C480,149,600,203,720,213.3C840,224,960,192,1080,176C1140,168,1200,176,1200,176L1200,0L1140,0C1080,0,960,0,840,0C720,0,600,0,480,0C360,0,240,0,120,0C60,0,0,0,0,0Z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: repeat-x;
+            background-position: bottom;
+            background-size: 1200px 80px;
+        }
+        .kamgu-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.3rem;
+        }
+        .kamgu-logo span { color: var(--kamgu-sun-orange); }
+        .kamgu-header h1 { font-size: 1.8rem; font-weight: 700; color: white; }
+        .kamgu-header p { color: #e0e4ff; margin-top: 0.5rem; font-size: 0.95rem; }
+
+        .instruction {
+            background: #fff7e6;
+            padding: 1rem 1.8rem;
+            margin: 1.5rem 2rem 0;
+            border-radius: 28px;
+            border-left: 6px solid var(--kamgu-sun-orange);
+            font-weight: 500;
+        }
+
+        .questions-list {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .question-card {
+            background: white;
+            border-radius: 28px;
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid #e2e8f0;
+            transition: var(--transition);
+        }
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+            color: var(--kamgu-deep-blue);
+        }
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .slider-row label {
+            font-weight: 500;
+            min-width: 40px;
+        }
+        input[type="range"] {
+            flex: 1;
+            min-width: 200px;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--kamgu-sun-orange);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        .value-display {
+            background: var(--kamgu-deep-blue);
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            min-width: 55px;
+            text-align: center;
+        }
+        .button-area { text-align: center; padding: 0 2rem 2rem; }
+        .kamgu-btn {
+            background: var(--kamgu-deep-blue);
+            color: white;
+            border: none;
+            font-family: 'Montserrat';
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 0.8rem 2rem;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            max-width: 300px;
+        }
+        .kamgu-btn:hover { background: #1a3f6e; transform: scale(1.02); }
+        .result-section {
+            margin: 0 2rem 2rem;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.95);
+            border-radius: 32px;
+            border: 1px solid var(--kamgu-sun-orange);
+            display: none;
+        }
+        .result-section h3 { color: var(--kamgu-deep-blue); margin-bottom: 1rem; }
+        .chart-container { max-width: 500px; margin: 0 auto; }
+        canvas { width: 100% !important; height: auto !important; }
+        .disclaimer {
+            margin: 0 2rem 1.5rem;
+            padding: 0.7rem 1.2rem;
+            background: rgba(240,78,35,0.08);
+            border-radius: 24px;
+            font-size: 0.75rem;
+            text-align: center;
+            font-style: italic;
+        }
+        .kamgu-footer {
+            background: var(--kamgu-deep-blue);
+            padding: 1rem;
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.7rem;
+        }
+        .kamgu-footer span { color: var(--kamgu-sun-orange); }
+        @media (max-width: 650px) {
+            body { padding: 1rem; }
+            .questions-list { padding: 1rem; gap: 1rem; }
+            .question-card { padding: 0.8rem 1rem; }
+            .slider-row { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+            input[type="range"] { width: 100%; }
+            .kamgu-header h1 { font-size: 1.4rem; }
+            .result-section { margin: 0 1rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="kamgu-container">
+    <div class="kamgu-header">
+        <div class="kamgu-logo">КамГУ <span>им. Витуса Беринга</span></div>
+        <h1>Твой профиль первооткрывателя</h1>
+        <p>Оцени каждое утверждение по шкале от 0 до 10</p>
+    </div>
+    <div class="instruction">
+        📌 Перед вами <strong>перемешанные утверждения</strong> из разных компетенций. Для каждого передвиньте ползунок: <br>
+        0 – совсем не про меня, 10 – точно про меня.
+    </div>
+
+    <div id="questionsList" class="questions-list"></div>
+
+    <div class="button-area">
+        <button id="buildBtn" class="kamgu-btn">✨ Построить мой профиль ✨</button>
+    </div>
+
+    <div id="resultSection" class="result-section">
+        <h3>📊 Ваша «роза компетенций»</h3>
+        <div class="chart-container">
+            <canvas id="radarChart" width="500" height="500"></canvas>
+        </div>
+        <p style="text-align: center; margin-top: 1rem;">Средний балл по каждой компетенции (0–10).</p>
+    </div>
+
+    <div class="disclaimer">
+        📌 Опросник помогает наметить зоны роста. Стань первооткрывателем в КамГУ!
+    </div>
+    <div class="kamgu-footer">
+        🌋 <span>Камчатский государственный университет им. Витуса Беринга</span> | Университет первооткрывателей
+    </div>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // Список вопросов (текст + привязка к компетенции)
+    // Компетенции: 0-Коммуникация, 1-Адаптивность, 2-Сотрудничество, 3-Саморегуляция,
+    //              4-Стрессоустойчивость, 5-Отношение к профессии, 6-Отношение к родному краю, 7-Проф.развитие
+    // --------------------------------------------------------------
+    const questionsRaw = [
+        { text: "Я легко нахожу общий язык с разными людьми (могу говорить «на их языке»).", compId: 0 },
+        { text: "Я умею аргументированно отстаивать свою позицию.", compId: 0 },
+        { text: "Всегда стараюсь понять точку зрения собеседника, даже если не согласен.", compId: 0 },
+        { text: "Рассматриваю трудности как возможность чему-то научиться.", compId: 1 },
+        { text: "Я готов быстро менять свои планы, если этого требует ситуация.", compId: 1 },
+        { text: "У меня есть несколько стратегий поведения в нестандартной обстановке.", compId: 1 },
+        { text: "Могу быть как лидером, так и исполнителем в команде.", compId: 2 },
+        { text: "Я разделяю групповые цели и действую в интересах команды.", compId: 2 },
+        { text: "Способен находить компромиссы и разрешать конфликты.", compId: 2 },
+        { text: "Я умею оценивать результаты своей деятельности и поведения.", compId: 3 },
+        { text: "Если цель не достигнута, я анализирую причины и делаю выводы.", compId: 3 },
+        { text: "При неудаче я могу управлять эмоциями и составить новый план.", compId: 3 },
+        { text: "В стрессовой ситуации я сохраняю спокойствие.", compId: 4 },
+        { text: "Я контролирую эмоции и действую рационально, даже когда всё идёт не по плану.", compId: 4 },
+        { text: "Умею привлекать ресурсы (люди, техники) для снижения стресса.", compId: 4 },
+        { text: "Я горжусь своей будущей профессией и считаю её значимой для общества.", compId: 5 },
+        { text: "Мне нравится сам процесс работы по профессии, она приносит удовлетворение.", compId: 5 },
+        { text: "Я чувствую, что профессия мне подходит, я «на своём месте».", compId: 5 },
+        { text: "Мне нравится природа и климат Камчатки.", compId: 6 },
+        { text: "Я горжусь тем, что живу на Камчатке, и чувствую принадлежность к сообществу.", compId: 6 },
+        { text: "Жизнь на Камчатке приносит мне радость и комфорт.", compId: 6 },
+        { text: "Я постоянно обновляю свои знания в профессиональной сфере.", compId: 7 },
+        { text: "Мне нравится экспериментировать и пробовать новые подходы.", compId: 7 },
+        { text: "У меня высокая мотивация к изучению нового, я стремлюсь к развитию.", compId: 7 }
+    ];
+
+    // Перемешиваем вопросы случайным образом
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    let questions = shuffleArray([...questionsRaw]);
+    let answers = []; // массив значений для каждого вопроса (0-10), инициализируем 5
+
+    // Рендерим все вопросы с ползунками
+    function renderQuestions() {
+        const container = document.getElementById('questionsList');
+        container.innerHTML = '';
+        questions.forEach((q, idx) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            const textDiv = document.createElement('div');
+            textDiv.className = 'question-text';
+            textDiv.textContent = `${idx+1}. ${q.text}`;
+            const sliderRow = document.createElement('div');
+            sliderRow.className = 'slider-row';
+            const leftLabel = document.createElement('label');
+            leftLabel.textContent = '0';
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.min = 0;
+            slider.max = 10;
+            slider.step = 1;
+            slider.value = answers[idx] !== undefined ? answers[idx] : 5;
+            slider.addEventListener('input', (e) => {
+                valueSpan.textContent = e.target.value;
+                answers[idx] = parseInt(e.target.value);
+            });
+            const valueSpan = document.createElement('span');
+            valueSpan.className = 'value-display';
+            valueSpan.textContent = slider.value;
+            const rightLabel = document.createElement('label');
+            rightLabel.textContent = '10';
+            sliderRow.appendChild(leftLabel);
+            sliderRow.appendChild(slider);
+            sliderRow.appendChild(valueSpan);
+            sliderRow.appendChild(rightLabel);
+            card.appendChild(textDiv);
+            card.appendChild(sliderRow);
+            container.appendChild(card);
+        });
+    }
+
+    // Инициализация answers (по умолчанию 5 для каждого вопроса, если не задано)
+    function initAnswers() {
+        if (answers.length === 0) {
+            answers = new Array(questions.length).fill(5);
+        } else if (answers.length !== questions.length) {
+            answers = new Array(questions.length).fill(5);
+        }
+    }
+
+    // Вычисляем средний балл по каждой компетенции (0-10)
+    function computeCompetencyScores() {
+        // Структура для накопления сумм и количества вопросов по compId
+        const sums = [0,0,0,0,0,0,0,0];
+        const counts = [0,0,0,0,0,0,0,0];
+        for (let i = 0; i < questions.length; i++) {
+            const compId = questions[i].compId;
+            const val = answers[i];
+            sums[compId] += val;
+            counts[compId]++;
+        }
+        const scores = sums.map((sum, idx) => {
+            if (counts[idx] === 0) return 0;
+            return Math.round((sum / counts[idx]) * 10) / 10;
+        });
+        return scores;
+    }
+
+    let chartInstance = null;
+    function buildRadar() {
+        const scores = computeCompetencyScores();
+        const labels = [
+            "Коммуникация", "Адаптивность", "Сотрудничество", "Саморегуляция",
+            "Стрессоустойчивость", "Отношение к профессии", "Отношение к родному краю", "Профессиональное развитие"
+        ];
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        if (!ctx) return;
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Ваш уровень (0–10)',
+                    data: scores,
+                    backgroundColor: 'rgba(240, 78, 35, 0.25)',
+                    borderColor: '#f04e23',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#0f2954',
+                    pointBorderColor: '#fff',
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 10,
+                        ticks: { stepSize: 2, backdropColor: 'transparent' },
+                        grid: { color: '#cbd5e1' },
+                        angleLines: { color: '#cbd5e1' },
+                        pointLabels: { font: { size: 11, family: 'Montserrat' }, color: '#0f2954' }
+                    }
+                },
+                plugins: {
+                    tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}` } },
+                    legend: { position: 'bottom', labels: { font: { size: 11 } } }
+                }
+            }
+        });
+        const resultSection = document.getElementById('resultSection');
+        resultSection.style.display = 'block';
+        resultSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Проверка, что все вопросы отвечены (всегда отвечены, т.к. есть default 5)
+    document.addEventListener('DOMContentLoaded', () => {
+        initAnswers();
+        renderQuestions();
+        document.getElementById('buildBtn').addEventListener('click', buildRadar);
+        document.getElementById('resultSection').style.display = 'none';
+    });
+</script>
+</body>
+</html>
